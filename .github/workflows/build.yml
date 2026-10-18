@@ -8,8 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Zip'i ac
-        run: for f in *.zip; do unzip -o "$f"; done
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -18,9 +16,17 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.7
-      - name: Derle
-        run: cd ezyvpn && gradle assembleDebug --no-daemon
+      - name: Zip'i ac, projeyi bul, derle
+        run: |
+          for f in *.zip; do unzip -o "$f"; done
+          APP=$(find . -path '*/app/build.gradle.kts' | head -1)
+          echo "Bulunan: $APP"
+          cd "$(dirname "$(dirname "$APP")")"
+          pwd
+          gradle assembleDebug --no-daemon
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/out/"
       - uses: actions/upload-artifact@v4
         with:
           name: ezyvpn-apk
-          path: ezyvpn/app/build/outputs/apk/debug/app-debug.apk
+          path: out/app-debug.apk
